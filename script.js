@@ -1,4 +1,4 @@
-
+// Quiz questions array
 const questions = [
   {
     question: "What is the capital of France?",
@@ -27,37 +27,34 @@ const questions = [
   },
 ];
 
-// Get references to DOM elements
+// DOM references
 const questionsElement = document.getElementById("questions");
 const submitBtn = document.getElementById("submit");
 const scoreElement = document.getElementById("score");
 
-// Load previously saved answers from session storage or initialize with nulls
+// Load answers from session storage or initialize empty array
 function getUserAnswers() {
   return JSON.parse(sessionStorage.getItem("progress")) || Array(questions.length).fill(null);
 }
 
-// Save answers in session storage
+// Save answers to session storage
 function saveUserAnswers(userAnswers) {
   sessionStorage.setItem("progress", JSON.stringify(userAnswers));
 }
 
-// Render questions and choices with restored progress
+// Render the quiz questions and choices with saved answers selected
 function renderQuestions() {
   const userAnswers = getUserAnswers();
   questionsElement.innerHTML = "";
 
   questions.forEach((q, idx) => {
-    // Create question container
     const questionDiv = document.createElement("div");
     questionDiv.className = "question";
 
-    // Question text
     const questionTextDiv = document.createElement("div");
     questionTextDiv.textContent = q.question;
     questionDiv.appendChild(questionTextDiv);
 
-    // Choices
     q.choices.forEach(choice => {
       const label = document.createElement("label");
       const input = document.createElement("input");
@@ -65,12 +62,12 @@ function renderQuestions() {
       input.name = `question-${idx}`;
       input.value = choice;
 
-      // Restore checked state
+      // Set checked property for restored answer
       if (userAnswers[idx] === choice) {
         input.checked = true;
       }
 
-      // Save progress on change
+      // On change, save the selected answer to session storage
       input.addEventListener("change", () => {
         userAnswers[idx] = choice;
         saveUserAnswers(userAnswers);
@@ -85,13 +82,15 @@ function renderQuestions() {
   });
 }
 
-// Calculate and display score, store in local storage
+// Calculate score and store it in local storage, then display it
 function handleSubmit() {
   const userAnswers = getUserAnswers();
   let score = 0;
+
   userAnswers.forEach((answer, i) => {
     if (answer === questions[i].answer) score++;
   });
+
   scoreElement.textContent = `Your score is ${score} out of ${questions.length}.`;
   localStorage.setItem("score", score);
 }
@@ -99,5 +98,5 @@ function handleSubmit() {
 // Initial render
 renderQuestions();
 
-// Submit button event listener
+// Bind submit event
 submitBtn.addEventListener("click", handleSubmit);
