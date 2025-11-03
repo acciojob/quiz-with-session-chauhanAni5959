@@ -30,17 +30,17 @@ const questionsElement = document.getElementById("questions");
 const submitBtn = document.getElementById("submit");
 const scoreElement = document.getElementById("score");
 
-// Get saved answers or initialize empty array
+// Retrieve saved answers or initialize empty array for progress
 function getUserAnswers() {
   return JSON.parse(sessionStorage.getItem("progress")) || Array(questions.length).fill(null);
 }
 
-// Save current user answers to session storage
+// Save current answers to session storage
 function saveUserAnswers(userAnswers) {
   sessionStorage.setItem("progress", JSON.stringify(userAnswers));
 }
 
-// Render questions with choices and restore previous selections
+// Render questions and choices, restore previous selections, and set checked attributes for Cypress
 function renderQuestions() {
   const userAnswers = getUserAnswers();
   questionsElement.innerHTML = "";
@@ -60,13 +60,28 @@ function renderQuestions() {
       input.name = `question-${idx}`;
       input.value = choice;
 
+      // Set both checked property and attribute for Cypress compatibility
       if (userAnswers[idx] === choice) {
         input.checked = true;
+        input.setAttribute("checked", "true");
+      } else {
+        input.checked = false;
+        input.removeAttribute("checked");
       }
 
       input.addEventListener("change", () => {
         userAnswers[idx] = choice;
         saveUserAnswers(userAnswers);
+
+        // Update checked attribute for all radios in the group to keep in sync for Cypress
+        const radios = document.getElementsByName(`question-${idx}`);
+        radios.forEach(radio => {
+          if (radio.value === choice) {
+            radio.setAttribute("checked", "true");
+          } else {
+            radio.removeAttribute("checked");
+          }
+        });
       });
 
       label.appendChild(input);
@@ -84,20 +99,17 @@ function handleSubmit() {
   let score = 0;
 
   for (let i = 0; i < questions.length; i++) {
-    if (userAnswers[i] === questions[i].answer) {
-      score++;
-    }
+    if (userAnswers[i] === questions[i].answer) score++;
   }
 
   scoreElement.textContent = `Your score is ${score} out of ${questions.length}.`;
   localStorage.setItem("score", score);
 }
 
-// Initial rendering and event hookup
 renderQuestions();
 submitBtn.addEventListener("click", handleSubmit);
 
-// Display last saved score if page reloads after submission
+// Display saved score after page reload
 window.addEventListener("load", () => {
   const savedScore = localStorage.getItem("score");
   if (savedScore !== null) {
