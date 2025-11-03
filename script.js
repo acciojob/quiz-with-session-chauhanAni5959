@@ -1,4 +1,3 @@
-// Quiz questions array
 const questions = [
   {
     question: "What is the capital of France?",
@@ -27,22 +26,21 @@ const questions = [
   },
 ];
 
-// DOM references
 const questionsElement = document.getElementById("questions");
 const submitBtn = document.getElementById("submit");
 const scoreElement = document.getElementById("score");
 
-// Load answers from session storage or initialize empty array
+// Get saved answers or initialize empty array
 function getUserAnswers() {
   return JSON.parse(sessionStorage.getItem("progress")) || Array(questions.length).fill(null);
 }
 
-// Save answers to session storage
+// Save current user answers to session storage
 function saveUserAnswers(userAnswers) {
   sessionStorage.setItem("progress", JSON.stringify(userAnswers));
 }
 
-// Render the quiz questions and choices with saved answers selected
+// Render questions with choices and restore previous selections
 function renderQuestions() {
   const userAnswers = getUserAnswers();
   questionsElement.innerHTML = "";
@@ -51,9 +49,9 @@ function renderQuestions() {
     const questionDiv = document.createElement("div");
     questionDiv.className = "question";
 
-    const questionTextDiv = document.createElement("div");
-    questionTextDiv.textContent = q.question;
-    questionDiv.appendChild(questionTextDiv);
+    const questionText = document.createElement("div");
+    questionText.textContent = q.question;
+    questionDiv.appendChild(questionText);
 
     q.choices.forEach(choice => {
       const label = document.createElement("label");
@@ -62,12 +60,10 @@ function renderQuestions() {
       input.name = `question-${idx}`;
       input.value = choice;
 
-      // Set checked property for restored answer
       if (userAnswers[idx] === choice) {
-        input.checked = true;
+        input.checked = true; // Use property, not attribute
       }
 
-      // On change, save the selected answer to session storage
       input.addEventListener("change", () => {
         userAnswers[idx] = choice;
         saveUserAnswers(userAnswers);
@@ -82,21 +78,20 @@ function renderQuestions() {
   });
 }
 
-// Calculate score and store it in local storage, then display it
+// Calculate score, display it, and save to local storage
 function handleSubmit() {
   const userAnswers = getUserAnswers();
   let score = 0;
 
-  userAnswers.forEach((answer, i) => {
-    if (answer === questions[i].answer) score++;
-  });
+  for (let i = 0; i < questions.length; i++) {
+    if (userAnswers[i] === questions[i].answer) {
+      score++;
+    }
+  }
 
   scoreElement.textContent = `Your score is ${score} out of ${questions.length}.`;
   localStorage.setItem("score", score);
 }
 
-// Initial render
 renderQuestions();
-
-// Bind submit event
 submitBtn.addEventListener("click", handleSubmit);
