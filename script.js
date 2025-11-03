@@ -61,7 +61,7 @@ function renderQuestions() {
       input.value = choice;
 
       if (userAnswers[idx] === choice) {
-        input.checked = true; // Use property, not attribute
+        input.checked = true;
       }
 
       input.addEventListener("change", () => {
@@ -93,5 +93,14 @@ function handleSubmit() {
   localStorage.setItem("score", score);
 }
 
+// Initial rendering and event hookup
 renderQuestions();
 submitBtn.addEventListener("click", handleSubmit);
+
+// Display last saved score if page reloads after submission
+window.addEventListener("load", () => {
+  const savedScore = localStorage.getItem("score");
+  if (savedScore !== null) {
+    scoreElement.textContent = `Your score is ${savedScore} out of ${questions.length}.`;
+  }
+});
